@@ -54,7 +54,7 @@ inline NNIndex<Distance>*
 
 struct AutotunedIndexParams : public IndexParams
 {
-    AutotunedIndexParams(float target_precision = 0.8, float build_weight = 0.01, float memory_weight = 0, float sample_fraction = 0.1)
+    AutotunedIndexParams(float target_precision = 0.8f, float build_weight = 0.01f, float memory_weight = 0.f, float sample_fraction = 0.1f)
     {
         (*this)["algorithm"] = FLANN_INDEX_AUTOTUNED;
         // precision desired (used for autotuning, -1 otherwise)
@@ -161,7 +161,7 @@ public:
     }
 
 
-    void addPoints(const Matrix<ElementType>& points, float rebuild_threshold = 2)
+    void addPoints(const Matrix<ElementType>& points, float rebuild_threshold = 2.f)
     {
         if (bestIndex_) {
             bestIndex_->addPoints(points, rebuild_threshold);
@@ -208,17 +208,21 @@ public:
 
     void saveIndex(FILE* stream)
     {
-    	serialization::SaveArchive sa(stream);
-    	sa & *this;
+        {
+            serialization::SaveArchive sa(stream);
+            sa & *this;
+        }
 
     	bestIndex_->saveIndex(stream);
     }
 
     void loadIndex(FILE* stream)
     {
-    	serialization::LoadArchive la(stream);
-    	la & *this;
-
+        {
+            serialization::LoadArchive la(stream);
+            la & *this;
+        }
+        
         IndexParams params;
         flann_algorithm_t index_type = get_param<flann_algorithm_t>(bestParams_,"algorithm");
         bestIndex_ = create_index_by_type<Distance>((flann_algorithm_t)index_type, dataset_, params, distance_);

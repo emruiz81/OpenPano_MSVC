@@ -111,9 +111,7 @@ public:
 
 	virtual ~NNIndex()
 	{
-		if (data_ptr_) {
-			delete[] data_ptr_;
-		}
+		delete[] data_ptr_;
 	}
 
 
@@ -135,7 +133,7 @@ public:
 	}
 
 	/**
-	 * Builds th index using using the specified dataset
+	 * Builds the index using the specified dataset
 	 * @param dataset the dataset to use
 	 */
     virtual void buildIndex(const Matrix<ElementType>& dataset)
@@ -228,22 +226,26 @@ public:
     	IndexHeader header;
 
     	if (Archive::is_saving::value) {
-    		header.data_type = flann_datatype_value<ElementType>::value;
-    		header.index_type = getType();
-    		header.rows = size_;
-    		header.cols = veclen_;
+            header.h.data_type = flann_datatype_value<ElementType>::value;
+            header.h.index_type = getType();
+            header.h.rows = size_;
+            header.h.cols = veclen_;
     	}
     	ar & header;
 
     	// sanity checks
     	if (Archive::is_loading::value) {
-    	    if (strcmp(header.signature,FLANN_SIGNATURE_)!=0) {
+            if (strncmp(header.h.signature,
+                        FLANN_SIGNATURE_,
+                        strlen(FLANN_SIGNATURE_) - strlen("v0.0")) != 0) {
     	        throw FLANNException("Invalid index file, wrong signature");
     	    }
-            if (header.data_type != flann_datatype_value<ElementType>::value) {
+
+            if (header.h.data_type != flann_datatype_value<ElementType>::value) {
                 throw FLANNException("Datatype of saved index is different than of the one to be created.");
             }
-            if (header.index_type != getType()) {
+
+            if (header.h.index_type != getType()) {
                 throw FLANNException("Saved index type is different then the current index type.");
             }
             // TODO: check for distance type
@@ -262,9 +264,7 @@ public:
 
     	if (save_dataset) {
     		if (Archive::is_loading::value) {
-    			if (data_ptr_) {
-    				delete[] data_ptr_;
-    			}
+    			delete[] data_ptr_;
     			data_ptr_ = new ElementType[size_*veclen_];
     			points_.resize(size_);
         		for (size_t i=0;i<size_;++i) {
@@ -361,7 +361,7 @@ public:
      * @param params
      * @return
      */
-    int knnSearch(const Matrix<ElementType>& queries,
+	virtual int knnSearch(const Matrix<ElementType>& queries,
                                  Matrix<int>& indices,
                                  Matrix<DistanceType>& dists,
                                  size_t knn,
@@ -388,7 +388,7 @@ public:
      * @param[in] knn Number of nearest neighbors to return
      * @param[in] params Search parameters
      */
-    int knnSearch(const Matrix<ElementType>& queries,
+	virtual int knnSearch(const Matrix<ElementType>& queries,
 					std::vector< std::vector<size_t> >& indices,
 					std::vector<std::vector<DistanceType> >& dists,
     				size_t knn,
@@ -459,7 +459,7 @@ public:
      * @param params
      * @return
      */
-    int knnSearch(const Matrix<ElementType>& queries,
+	virtual int knnSearch(const Matrix<ElementType>& queries,
                                  std::vector< std::vector<int> >& indices,
                                  std::vector<std::vector<DistanceType> >& dists,
                                  size_t knn,
@@ -478,13 +478,13 @@ public:
     /**
      * @brief Perform radius search
      * @param[in] query The query point
-     * @param[out] indices The indinces of the neighbors found within the given radius
+     * @param[out] indices The indices of the neighbors found within the given radius
      * @param[out] dists The distances to the nearest neighbors found
      * @param[in] radius The radius used for search
      * @param[in] params Search parameters
      * @return Number of neighbors found
      */
-    int radiusSearch(const Matrix<ElementType>& queries,
+	virtual int radiusSearch(const Matrix<ElementType>& queries,
     		Matrix<size_t>& indices,
     		Matrix<DistanceType>& dists,
     		float radius,
@@ -567,7 +567,7 @@ public:
      * @param params
      * @return
      */
-    int radiusSearch(const Matrix<ElementType>& queries,
+	virtual int radiusSearch(const Matrix<ElementType>& queries,
                                     Matrix<int>& indices,
                                     Matrix<DistanceType>& dists,
                                     float radius,
@@ -588,13 +588,13 @@ public:
     /**
      * @brief Perform radius search
      * @param[in] query The query point
-     * @param[out] indices The indinces of the neighbors found within the given radius
+     * @param[out] indices The indices of the neighbors found within the given radius
      * @param[out] dists The distances to the nearest neighbors found
      * @param[in] radius The radius used for search
      * @param[in] params Search parameters
      * @return Number of neighbors found
      */
-    int radiusSearch(const Matrix<ElementType>& queries,
+	virtual int radiusSearch(const Matrix<ElementType>& queries,
     		std::vector< std::vector<size_t> >& indices,
     		std::vector<std::vector<DistanceType> >& dists,
     		float radius,
@@ -673,7 +673,7 @@ public:
      * @param params
      * @return
      */
-    int radiusSearch(const Matrix<ElementType>& queries,
+	virtual int radiusSearch(const Matrix<ElementType>& queries,
                                     std::vector< std::vector<int> >& indices,
                                     std::vector<std::vector<DistanceType> >& dists,
                                     float radius,
@@ -704,7 +704,7 @@ protected:
     		return id;
     	}
     	size_t point_index = size_t(-1);
-    	if (ids_[id]==id) {
+    	if (id < ids_.size() && ids_[id]==id) {
     		return id;
     	}
     	else {
