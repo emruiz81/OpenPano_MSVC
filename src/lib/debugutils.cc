@@ -11,7 +11,6 @@
 #include <map>
 #ifdef _MSC_VER
 #include <filesystem>
-using namespace std::tr2::sys;
 #else
 #include <libgen.h>
 #endif
@@ -38,14 +37,16 @@ void __print_debug__(const char *file, const char *func, int line, const char *f
 	}
 
 #ifdef _MSC_VER
-  std::tr2::sys::path _fbase(file);
+  std::filesystem::path _fbase(file);
   auto fbase = _fbase.stem().c_str();
 #else
   char *fdup = strdup(file);
   char *fbase = basename(fdup);
 #endif
   c_fprintf(colormap[line].c_str(), stderr, "[%s@%s:%d] ", func, fbase, line);
+#ifndef _MSC_VER
   free(fdup);
+#endif
 
 	va_list ap;
 	va_start(ap, fmt);
