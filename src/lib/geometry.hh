@@ -163,12 +163,12 @@ class Vector2D {
 	public:
 		T x = 0, y = 0;
 
-		Vector2D<T>(){};
+		Vector2D(){};
 
-		explicit Vector2D<T>(T m_x, T m_y):
+		explicit Vector2D(T m_x, T m_y):
 			x(m_x), y(m_y) {}
 
-		Vector2D<T> (const Vector2D<T> &p0, const Vector2D<T> &p1):
+		Vector2D(const Vector2D<T> &p0, const Vector2D<T> &p1):
 			x(p1.x - p0.x), y(p1.y -p0.y) {}
 
 		T dot(const Vector2D<T> &v) const
